@@ -129,7 +129,7 @@ kill\_cpu=\$( echo "\$cpu>\$check\_cpu\_val" | bc )\\
 bc is a package that is used for comparisons of float values as shell isn't capable of doing that.\\ bc returns '1' if it the condition is satisfied.
 
 The kill command is used for killing a process.
-\newline
+\newpage
 \begin{flushleft}
 Script now:
 \newline
@@ -139,6 +139,8 @@ check\_cpu\_val=10.0\\
 ps -e -o pmem=,pcpu=,pid=,user=,comm= --sort=-pmem |\\
   while read size cpu pid user comm\\
   do\\
+kill\_mem=0\\
+kill\_cpu=0\\
 kill\_mem=\$( echo "\$size>\$check\_mem\_val | bc" )\\
 kill\_cpu=\$( echo "\$cpu>\$check\_cpu\_val" | bc )\\
  if [ "\$kill\_mem" = "1" ]\\
@@ -165,6 +167,8 @@ check\_cpu\_val=10.0\\
 ps -e -o pmem=,pcpu=,pid=,user=,comm= --sort=-pmem |\\
   while read size cpu pid user comm\\
   do\\
+kill\_mem=0\\
+kill\_cpu=0\\
 if [ "\$user" = "golden-+" ]\\
     then\\
 kill\_mem=\$( echo "\$size>\$check\_mem\_val | bc" )\\
@@ -196,6 +200,8 @@ do\\
 ps -e -o pmem=,pcpu=,pid=,user=,comm= --sort=-pmem |\\
   while read size cpu pid user comm\\
   do\\
+kill\_mem=0\\
+kill\_cpu=0\\
 if [ "\$user" = "golden-+" ]\\
     then\\
 kill\_mem=\$( echo "\$size>\$check\_mem\_val | bc" )\\
@@ -228,6 +234,8 @@ do\\
 ps -e -o pmem=,pcpu=,pid=,user=,comm= --sort=-pmem |\\
   while read size cpu pid user comm\\
   do\\
+kill\_mem=0\\
+kill\_cpu=0\\
 if [ "\$user" = "golden-+" ]\\
     then\\
 kill\_mem=\$( echo "\$size>\$check\_mem\_val | bc" )\\
