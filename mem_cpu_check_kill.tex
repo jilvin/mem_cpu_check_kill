@@ -1,0 +1,255 @@
+\documentclass[12pt,a4paper]{article}
+\title{Script to check memory usage, cpu usage and to kill processes if they use more than the specified value.}
+\author{Jilvin Jacob, Amal S Raj, Anish R} 
+\date{February 23 2017}
+\begin{document}
+\maketitle
+\begin{center}
+https://github.com/jilvin/mem\_cpu\_check\_kill
+\end{center}
+\newpage
+\section{Introduction}
+ 
+What we are up to?
+ 
+Our task was to write a shell script that checks on memory usage and cpu usage of various processes and to kill them if they use more than a specified value. Moreover we had to set it start at system startup.
+\newpage
+\section{Script Declaration}
+
+We are writing a shell script. So it is advised to add first line as:\\
+\#!/bin/sh
+\newline
+\begin{flushleft}
+Script now:
+\newline
+\#!/bin/sh
+\end{flushleft}
+\newpage
+\section{Obtaining information from system.}
+
+We need to obtain information on currenly working processes from the system. Here, we will be using the package 'ps'.\\So we will be adding line as:\\
+ps
+\newline
+\begin{flushleft}
+Script now:
+\newline
+\#!/bin/sh\\
+ps
+\end{flushleft}
+\newpage
+\section{ps need flags}
+
+Simply using ps won't return what we actually need. We need pmem and pcpu values of all processes.\\So we will be rewriting line as:\\
+ps -e -o pmem,pcpu,pid,user,comm
+\newline
+\begin{flushleft}
+Script now:
+\newline
+\#!/bin/sh\\
+ps -e -o pmem,pcpu,pid,user,comm\\
+\end{flushleft}
+\newpage
+\section{ps need "more" flags}
+
+When we use ps -e -o pmem,pcpu,pid,user,comm; We actually will have to skip the first return line before processing. To skip the titles, it is better to add an '=' after each format name.\\So we will be rewriting line as:\\
+ps -e -o pmem=,pcpu=,pid=,user=,comm=
+\newline
+\begin{flushleft}
+Script now:
+\newline
+\#!/bin/sh\\
+ps -e -o pmem=,pcpu=,pid=,user=,comm=\\
+\end{flushleft}
+\newpage
+\section{Advantage of sorting}
+
+Here, we are to kill processes that use more resources than a specified value, so it is better to get a sorted return from ps.\\So we will be rewriting line as:\\
+ps -e -o pmem=,pcpu=,pid=,user=,comm= --sort=-pmem\\
+The - symbol indicates that sorting must be in descending order with respect to pmem values.
+\newline
+\begin{flushleft}
+Script now:
+\newline
+\#!/bin/sh\\
+ps -e -o pmem=,pcpu=,pid=,user=,comm= --sort=-pmem\\
+\end{flushleft}
+\newpage
+\section{Start reading values.}
+
+We haven't actually read the values into our script/process.So we will be adding a '|' operator and a while loop to read each line of return.\\
+ps -e -o pmem=,pcpu=,pid=,user=,comm= --sort=-pmem |\\
+  while read size cpu pid user comm\\
+  do\\
+  done\\
+Here size, cpu, pid, user, comm are variables of the script. ie values from ps will be saved to these variables.
+\newline
+\begin{flushleft}
+Script now:
+\newline
+\#!/bin/sh\\
+ps -e -o pmem=,pcpu=,pid=,user=,comm= --sort=-pmem |\\
+  while read size cpu pid user comm\\
+  do\\
+  done\\
+\end{flushleft}
+\newpage
+\section{Declaring check values.}
+
+We have to declare the values to be checked for at the beginning of the script.So we will be adding the lines:\\
+check\_mem\_val=10.0\\
+check\_cpu\_val=10.0\\
+We are using float values because the return from ps will be in percentage for pmem and pcpu.
+\newline
+\begin{flushleft}
+Script now:
+\newline
+\#!/bin/sh\\
+check\_mem\_val=10.0\\
+check\_cpu\_val=10.0\\
+ps -e -o pmem=,pcpu=,pid=,user=,comm= --sort=-pmem |\\
+  while read size cpu pid user comm\\
+  do\\
+  done\\
+\end{flushleft}
+\newpage
+\section{Comparing values.}
+
+We have to compare the values(value obtained, value specified) in order to kill processes using more resources than specified. So we will be adding the lines within the while loop:\\
+kill\_mem=\$( echo "\$size>\$check\_mem\_val" | bc )\\
+kill\_cpu=\$( echo "\$cpu>\$check\_cpu\_val" | bc )\\
+ if [ "\$kill\_mem" = "1" ]\\
+      then\\
+        kill \$pid \# \$size \$user \$comm\\
+      elif [ "\$kill\_cpu" = "1" ]\\
+      then\\
+        kill \$pid \# \$size \$user \$comm\\
+      else\\
+        continue\\
+      fi\\
+bc is a package that is used for comparisons of float values as shell isn't capable of doing that.\\ bc returns '1' if it the condition is satisfied.
+
+The kill command is used for killing a process.
+\newline
+\begin{flushleft}
+Script now:
+\newline
+\#!/bin/sh\\
+check\_mem\_val=10.0\\
+check\_cpu\_val=10.0\\
+ps -e -o pmem=,pcpu=,pid=,user=,comm= --sort=-pmem |\\
+  while read size cpu pid user comm\\
+  do\\
+kill\_mem=\$( echo "\$size>\$check\_mem\_val | bc" )\\
+kill\_cpu=\$( echo "\$cpu>\$check\_cpu\_val" | bc )\\
+ if [ "\$kill\_mem" = "1" ]\\
+      then\\
+        kill \$pid \# \$size \$user \$comm\\
+      elif [ "\$kill\_cpu" = "1" ]\\
+      then\\
+        kill \$pid \# \$size \$user \$comm\\
+      else\\
+        continue\\
+      fi\\
+  done\\
+\end{flushleft}
+\newpage
+\section{Comparing user.}
+
+It is better to kill processes owned by the user not the root. So we will be adding an outer if structure.\\
+\begin{flushleft}
+Script now:
+\newline
+\#!/bin/sh\\
+check\_mem\_val=10.0\\
+check\_cpu\_val=10.0\\
+ps -e -o pmem=,pcpu=,pid=,user=,comm= --sort=-pmem |\\
+  while read size cpu pid user comm\\
+  do\\
+if [ "\$user" = "golden-+" ]\\
+    then\\
+kill\_mem=\$( echo "\$size>\$check\_mem\_val | bc" )\\
+kill\_cpu=\$( echo "\$cpu>\$check\_cpu\_val" | bc )\\
+ if [ "\$kill\_mem" = "1" ]\\
+      then\\
+        kill \$pid \# \$size \$user \$comm\\
+      elif [ "\$kill\_cpu" = "1" ]\\
+      then\\
+        kill \$pid \# \$size \$user \$comm\\
+      else\\
+        continue\\
+      fi\\
+fi\\
+  done\\
+\end{flushleft}
+\newpage
+\section{Infinite loop.}
+
+Also, we need to set an outer infinite loop so that the program is repeated all the time the system is up.\\
+\begin{flushleft}
+Script now:
+\newline
+\#!/bin/sh\\
+check\_mem\_val=10.0\\
+check\_cpu\_val=10.0\\
+while(true)\\
+do\\
+ps -e -o pmem=,pcpu=,pid=,user=,comm= --sort=-pmem |\\
+  while read size cpu pid user comm\\
+  do\\
+if [ "\$user" = "golden-+" ]\\
+    then\\
+kill\_mem=\$( echo "\$size>\$check\_mem\_val | bc" )\\
+kill\_cpu=\$( echo "\$cpu>\$check\_cpu\_val" | bc )\\
+ if [ "\$kill\_mem" = "1" ]\\
+      then\\
+        kill \$pid \# \$size \$user \$comm\\
+      elif [ "\$kill\_cpu" = "1" ]\\
+      then\\
+        kill \$pid \# \$size \$user \$comm\\
+      else\\
+        continue\\
+      fi\\
+fi\\
+  done\\
+done\\
+\end{flushleft}
+\newpage
+\section{Control process usage.}
+
+We created a process to control cpu usage. We don't want it to use more of the cpu. So we will be sleeping/pausing the outer loop for 1s.\\We will be using sleep command.\\
+\begin{flushleft}
+Script now:
+\newline
+\#!/bin/sh\\
+check\_mem\_val=10.0\\
+check\_cpu\_val=10.0\\
+while(true)\\
+do\\
+ps -e -o pmem=,pcpu=,pid=,user=,comm= --sort=-pmem |\\
+  while read size cpu pid user comm\\
+  do\\
+if [ "\$user" = "golden-+" ]\\
+    then\\
+kill\_mem=\$( echo "\$size>\$check\_mem\_val | bc" )\\
+kill\_cpu=\$( echo "\$cpu>\$check\_cpu\_val" | bc )\\
+ if [ "\$kill\_mem" = "1" ]\\
+      then\\
+        kill \$pid \# \$size \$user \$comm\\
+      elif [ "\$kill\_cpu" = "1" ]\\
+      then\\
+        kill \$pid \# \$size \$user \$comm\\
+      else\\
+        continue\\
+      fi\\
+fi\\
+  done\\
+sleep 1\\
+done\\
+\end{flushleft}
+\newpage
+\section{Adding the script to startup.(optional)}
+
+To make the script run on startup on Debian/Ubuntu do the following steps.\\\\1) Copy the script to /etc/init.d directory\\\\2) sudo update-rc.d mem\_cpu\_check\_kill.sh defaults\\\\
+To remove the script from running on startup, do:\\\\
+sudo update-rc.d -f mem\_cpu\_check\_kill.sh remove\\\\
+\end{document}
