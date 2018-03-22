@@ -5,3 +5,6 @@ Shell(.sh) script to check memory usage, cpu usage and to kill the process once 
 See mem_cpu_check_kill.pdf for how the script was derived or coded. It will help you to understand the working of the script easily.
 
 mem_cpu_check_kill.tex was used for compiling the .pdf file. If you suggest any change in .pdf, do it in .tex and push the commit.
+
+## Note:
+The script is a basic implementation. It does not check or take into consideration child processes in calculation. If you are looking for an advanced implementation you might want to checkout https://github.com/padosoft/kill-process
